@@ -1,32 +1,31 @@
-package library
+package library_test
 
 import (
-	"fmt"
-	"main/task1/library"
 	"testing"
+
+	"main/task1/library"
+	"main/task1/storage"
 )
 
 func TestLibraryAddAndFindBook(t *testing.T) {
-	fmt.Println("Test Starting...")
 	idCounter := 1
 	idGenerator := func() int {
 		id := idCounter
 		idCounter++
 		return id
 	}
-	lib := library.NewLibrary(idGenerator)
 
-	books := []library.Book{
+	lib := library.NewLibrary(storage.NewMapStorage(), idGenerator)
+
+	books := []storage.Book{
 		{Title: "1984"},
 		{Title: "Far Beyond the World"},
 	}
 
-	fmt.Println("Adding books...")
 	for _, book := range books {
 		lib.AddBook(book.Title)
 	}
 
-	fmt.Println("Getting book by title...")
 	book, err := lib.GetBookByTitle("1984")
 	if err != nil {
 		t.Errorf("Expected book '1984' but got error: %v", err)
@@ -51,25 +50,22 @@ func TestLibraryReplaceIdGenerator(t *testing.T) {
 		idCounter++
 		return id
 	}
-	lib := library.NewLibrary(idGenerator)
 
-	fmt.Println("Adding books with first generator...")
+	lib := library.NewLibrary(storage.NewMapStorage(), idGenerator)
+
 	lib.AddBook("1984")
 
-	fmt.Println("Generator change...")
 	idCounter = 1
-	NewidGenerator := func() int {
+	newIdGenerator := func() int {
 		id := idCounter*2 + 1
 		idCounter++
 		return id
 	}
-	lib.SetIDGenerator(NewidGenerator)
+	lib.SetIDGenerator(newIdGenerator)
 
-	fmt.Println("Adding book with another generator...")
 	newBookID := lib.AddBook("The Catcher in the Rye")
 
-	fmt.Println("Getting book by id...")
-	book, err := lib.GetBookById(newBookID)
+	book, err := lib.GetBookByID(newBookID)
 	if err != nil {
 		t.Errorf("Expected book 'The Catcher in the Rye' but got error: %v", err)
 	}
@@ -88,31 +84,30 @@ func TestLibraryReplaceStorage(t *testing.T) {
 		idCounter++
 		return id
 	}
-	lib := library.NewLibrary(idGenerator)
 
-	books := []library.Book{
+	lib := library.NewLibrary(storage.NewMapStorage(), idGenerator)
+
+	books := []storage.Book{
 		{Title: "1984"},
 		{Title: "Far Beyond the World"},
 	}
 
-	fmt.Println("Adding books with one storage...")
 	for _, book := range books {
 		lib.AddBook(book.Title)
 	}
 
 	lib.ReplaceStorage()
+	lib = library.NewLibrary(storage.NewSliceStorage(), idGenerator)
 
-	books = []library.Book{
+	books = []storage.Book{
 		{Title: "Moby Dick"},
 		{Title: "Kakaya ti kNIGGA"},
 	}
 
-	fmt.Println("Adding books with another storage...")
 	for _, book := range books {
 		lib.AddBook(book.Title)
 	}
 
-	fmt.Println("Getting book by title...")
 	book, err := lib.GetBookByTitle("Moby Dick")
 	if err != nil {
 		t.Errorf("Expected title 'Moby Dick' but got error: %v", err)
